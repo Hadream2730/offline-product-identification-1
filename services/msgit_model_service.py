@@ -5,20 +5,30 @@ import time
 import torch
 from PIL import Image
 import spacy
+import spacy.cli
 from transformers import AutoProcessor as GitProcessor, AutoModelForCausalLM as GitForCausalLM
 
 
-# ─── Constants ────────────────────────────────────────────────────────────────
+
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 MODEL_ID = "microsoft/git-base"
 RESIZE_TO = 512
 MAX_TOK   = 80
 
-# ─── Heavy‑weight objects (loaded once) ───────────────────────────────────────
+
 print(f"[MODEL] Initializing models on device: {DEVICE}")
 print(f"[MODEL] Loading spaCy model...")
 start_time = time.perf_counter()
-nlp = spacy.load("en_core_web_sm", disable=["ner"])
+
+# Try to load spaCy model, download if not available
+try:
+    nlp = spacy.load("en_core_web_sm", disable=["ner"])
+except OSError:
+    print(f"[MODEL] spaCy model not found. Downloading en_core_web_sm...")
+    spacy.cli.download("en_core_web_sm")
+    nlp = spacy.load("en_core_web_sm", disable=["ner"])
+    print(f"[MODEL] spaCy model downloaded and loaded successfully")
+
 spacy_time = time.perf_counter() - start_time
 print(f"[MODEL] spaCy loaded in {spacy_time:.3f}s")
 
@@ -38,7 +48,7 @@ total_init_time = spacy_time + processor_time + model_time
 print(f"[MODEL] All models initialized in {total_init_time:.3f}s")
 
 
-# ─── Internal helpers ────────────────────────────────────────────────────────
+
 def _generate_caption(img: Image.Image) -> str:
     """Run Microsoft GIT‑base and return a raw caption."""
     print(f"[CAPTION] Processing image with GIT model...")
@@ -70,7 +80,6 @@ def _generate_caption(img: Image.Image) -> str:
     return caption
 
 
-# ─── Public API ───────────────────────────────────────────────────────────────
 def describe_product(image: Union[str, Path, bytes]) -> dict:
     total_start = time.perf_counter()
     print(f"\n[PRODUCT] Starting product analysis...")
