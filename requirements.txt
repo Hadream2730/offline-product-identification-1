@@ -1,0 +1,11 @@
+torch>=2.1
+torchvision>=0.18
+torchaudio>=2.1
+transformers[torch]==4.52.4    # Git-base needs ≥4.32 and we’ve tested 4.52.4
+accelerate
+sentencepiece
+pillow
+spacy>=3.8,<3.9
+fastapi
+uvicorn[standard]
+python-multipart
