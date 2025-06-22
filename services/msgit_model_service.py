@@ -134,7 +134,6 @@ def describe_product(image: Union[str, Path, bytes]) -> dict:
     
     # Build result
     result = {
-        "filename": filename,
         "name": name.capitalize(),
         "description": caption.rstrip(" .") + ".",
     }
